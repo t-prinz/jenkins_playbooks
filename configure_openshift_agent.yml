@@ -1,0 +1,20 @@
+---
+- name: Configure a Jenkins virtual machine agent for use with the OpenShift plugin
+  hosts: "{{ hostlist | default('all') }}"
+  become: True
+  vars:
+    ocp_client_tarfile: "specify_this.tar"
+  tasks:
+
+    - name: Ensure git is installed
+      ansible.builtin.yum:
+        name: "{{ package_list }}"
+        state: present
+      vars:
+        package_list:
+          - git
+
+    - name: Ensure the OpenShift client is in place
+      ansible.builtin.unarchive:
+        dest: /usr/local/bin/
+        src: "{{ ocp_client_tarfile }}"

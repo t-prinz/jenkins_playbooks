@@ -42,11 +42,25 @@
         port: "{{ jenkins_port }}/tcp"
         state: enabled
 
-    - name: Obtain the initial Jenkins password
-      ansible.builtin.command:
-        cmd: "cat /var/lib/jenkins/secrets/initialAdminPassword"
-      register: cmd_out
+    - name: Check to see if the initial Jenkins password file exists
+      ansible.builtin.stat:
+        path: /var/lib/jenkins/secrets/initialAdminPassword
+      register: pwfile_out
 
-    - name: Print the initial Jenkins password
-      ansible.builtin.debug:
-        msg: "Initial Jenkins password: {{ cmd_out.stdout }}"
+    - block:
+
+        - name: Obtain the initial Jenkins password
+          ansible.builtin.command:
+            cmd: "cat /var/lib/jenkins/secrets/initialAdminPassword"
+          register: cmd_out
+
+        - name: Print the initial Jenkins password
+          ansible.builtin.debug:
+            msg: "Initial Jenkins password: {{ cmd_out.stdout }}"
+
+      when: pwfile_out.stat.exists
+
+    - name: Message when Jenkins has already been configured
+      debug:
+        msg: "Jenkins has already been configured.  Initial password is not available."
+      when: not pwfile_out.stat.exists
