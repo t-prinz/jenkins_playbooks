@@ -1,0 +1,55 @@
+---
+# References:
+#   https://www.jenkins.io/doc/book/installing/linux/
+#   https://www.redhat.com/sysadmin/install-jenkins-rhel8
+- name: Install Jenkins on a host
+  hosts: "{{ hostlist | default('all') }}"
+  become: True
+  vars:
+    jenkins_port: 8080
+  tasks:
+
+    - name: Ensure Jenkins repo is in place
+      ansible.builtin.yum_repository:
+        baseurl: http://pkg.jenkins.io/redhat-stable
+        description: "Jenkins-stable"
+        enabled: True
+        gpgcheck: True
+        gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+        name: jenkins
+        state: present
+
+    - name: Ensure Jenkins and dependencies are installed
+      ansible.builtin.yum:
+        name: "{{ package_list }}"
+        state: present
+      vars:
+        package_list:
+          - java-11-openjdk
+          - jenkins
+          - firewalld
+
+    - name: Ensure firewalld and jenkins services are started and enabled on reboot
+      ansible.builtin.service:
+        enabled: True
+        name: "{{ item }}"
+        state: started
+      loop:
+        - firewalld
+        - jenkins
+
+    - name: Ensure Jenkins port is configured in firewalld
+      ansible.posix.firewalld:
+        immediate: True
+        permanent: True
+        port: "{{ jenkins_port }}/tcp"
+        state: enabled
+
+    - name: Obtain the initial Jenkins password
+      ansible.builtin.command:
+        cmd: "cat /var/lib/jenkins/secrets/initialAdminPassword"
+      register: cmd_out
+
+    - name: Print the initial Jenkins password
+      ansible.builtin.debug:
+        msg: "Initials Jenkins password: {{ cmd_out.stdout }}"
