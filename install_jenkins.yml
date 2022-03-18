@@ -1,7 +1,4 @@
 ---
-# References:
-#   https://www.jenkins.io/doc/book/installing/linux/
-#   https://www.redhat.com/sysadmin/install-jenkins-rhel8
 - name: Install Jenkins on a host
   hosts: "{{ hostlist | default('all') }}"
   become: True
@@ -52,4 +49,4 @@
 
     - name: Print the initial Jenkins password
       ansible.builtin.debug:
-        msg: "Initials Jenkins password: {{ cmd_out.stdout }}"
+        msg: "Initial Jenkins password: {{ cmd_out.stdout }}"
