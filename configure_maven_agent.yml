@@ -1,0 +1,34 @@
+---
+- name: Configure a Jenkins virtual machine agent for use with maven
+  hosts: "{{ hostlist | default('all') }}"
+  become: True
+  tasks:
+
+    - name: Define repositories to be enabled for RHEL 7
+      debug:
+        msg: "This playbook currently does not support RHEL 7"
+      when: ansible_facts.distribution is defined and ansible_facts.distribution == "RedHat" and ansible_facts.distribution_major_version is defined and ansible_facts.distribution_major_version == "7"
+
+    - name: Define repositories to be enabled for RHEL 8
+      debug:
+        msg: "No maven repositories need to be defined for RHEL 8"
+      when: ansible_facts.distribution is defined and ansible_facts.distribution == "RedHat" and ansible_facts.distribution_major_version is defined and ansible_facts.distribution_major_version == "8"
+
+    - name: Setup maven repository if needed
+      command: "subscription-manager repos --enable={{ maven_repo }}"
+      when: maven_repo is defined
+
+    - name: Ensure maven is installed
+      yum:
+        name: maven
+        state: present
+
+    - name: Cleanup yum repositories
+      command: "yum clean all"
+      args:
+        warn: No
+
+    - name: Remove yum cache
+      file:
+        path: /var/cache/yum
+        state: absent
