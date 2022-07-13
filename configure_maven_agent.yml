@@ -14,6 +14,11 @@
         msg: "No maven repositories need to be defined for RHEL 8"
       when: ansible_facts.distribution is defined and ansible_facts.distribution == "RedHat" and ansible_facts.distribution_major_version is defined and ansible_facts.distribution_major_version == "8"
 
+    - name: Define repositories to be enabled for RHEL 9
+      debug:
+        msg: "No maven repositories need to be defined for RHEL 9"
+      when: ansible_facts.distribution is defined and ansible_facts.distribution == "RedHat" and ansible_facts.distribution_major_version is defined and ansible_facts.distribution_major_version == "9"
+
     - name: Setup maven repository if needed
       command: "subscription-manager repos --enable={{ maven_repo }}"
       when: maven_repo is defined
